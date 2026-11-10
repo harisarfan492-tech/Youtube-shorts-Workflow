@@ -1,0 +1,153 @@
+{
+  "name": "YouTube Shorts Automation",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [-480, 0],
+      "id": "6c46ee40-aea6-4767-9291-66d59d0f01ae",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "command": "cmd /c C:\\n8n-content\\make_short.bat"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [736, 80],
+      "id": "59df1d2a-69d9-462c-9119-1fd4c8833c46",
+      "name": "Execute Command"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "models/gemini-3-flash-preview"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "You write high-retention YouTube Shorts about technology, computing, gaming, and surprising science.\\n\\nWrite ONE original narration for a 20–30 second Short.\\n\\nHOOK:\\n- The first sentence must immediately make someone curious.\\n- Never begin with \\"Did you know?\\"\\n- Lead with the strangest or most surprising part.\\n- Examples of opening styles: \\"A real insect once crashed a computer.\\" or \\"Your phone has more computing power than the computers used for the Moon landing.\\"\\n- Do not copy these examples unless they genuinely fit the topic.\\n\\nSTORY:\\n- Aim for 45–60 words.\\n- Use short, natural spoken sentences.\\n- Explain one specific, accurate fact.\\n- Reveal the interesting detail early, then deliver a satisfying payoff.\\n- Avoid filler, generic introductions, repeated ideas, and fake drama.\\n- End with a memorable line.\\n- Ask the User to Like and Subscribe\\n\\nReturn ONLY the narration as one paragraph. No title, headings, labels, quotation marks, or scene directions. Make the topic different from common overused trivia whenever possible."
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.2,
+      "position": [-256, 0],
+      "id": "789b30ed-ab50-4add-a920-0bfc77cb20ac",
+      "name": "Message a model"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first();\\n\\nconst script = item.json.content?.parts?.[0]?.text;\\n\\nif (!script) {\\n  throw new Error(\\"Gemini did not return a script in content.parts[0].text\\");\\n}\\n\\nreturn [\\n  {\\n    json: {\\n      script: script.trim()\\n    }\\n  }\\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [64, 112],
+      "id": "0807d614-e860-4703-ab2a-5b1f87a1aa83",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "operation": "toText",
+        "sourceProperty": "script",
+        "options": {
+          "fileName": "script.txt"
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [336, 0],
+      "id": "88ec4af4-d86c-426f-a600-6d624b3baf0a",
+      "name": "Convert to File"
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "C:\\n8n-content\\audio\\script.txt",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [416, -240],
+      "id": "4b8a4d6f-c63c-483a-ad9c-53350366c9cd",
+      "name": "Read/Write Files from Disk"
+    },
+    {
+      "parameters": {
+        "resource": "video",
+        "operation": "upload",
+        "title": "={{ $('Code in JavaScript1').item.json.title }}",
+        "regionCode": "PK",
+        "categoryId": "28",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.youTube",
+      "typeVersion": 1,
+      "position": [1520, 96],
+      "id": "583f948e-35db-4283-a3c7-e715411eeb26",
+      "name": "Upload a video"
+    },
+    {
+      "parameters": {
+        "fileSelector": "={{ $json.filePath }}",
+        "options": {
+          "dataPropertyName": "data"
+        }
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [1264, -16],
+      "id": "ec7fcaab-03c8-4df5-9f80-c6c1af8141bc",
+      "name": "Read/Write Files from Disk1"
+    },
+    {
+      "parameters": {
+        "jsCode": "\\nconst result = $input.first();\\nconst output = result.json.stdout || \\"\\";\\n\\nconst match = output.match(\\n  /C:\\\\\\\\n8n-content\\\\output\\\\short_[^\\r\\n]+\\\\.mp4/i\\n);\\n\\nif (!match) {\\n  throw new Error(\\"Could not find the generated Short path in Execute Command output.\\");\\n}\\n\\nreturn [\\n  {\\n    json: {\\n      filePath: match[0],\\n      title: \\"Amazing Tech Fact #Shorts\\",\\n      description: \\"A fascinating tech fact! #Shorts #Technology\\",\\n    },\\n  },\\n];\\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [992, -32],
+      "id": "e377a862-da74-4a45-a714-b94ec5adecd8",
+      "name": "Code in JavaScript1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [[{"node": "Message a model", "type": "main", "index": 0}]]
+    },
+    "Message a model": {
+      "main": [[{"node": "Code in JavaScript", "type": "main", "index": 0}]]
+    },
+    "Code in JavaScript": {
+      "main": [[{"node": "Convert to File", "type": "main", "index": 0}]]
+    },
+    "Convert to File": {
+      "main": [[{"node": "Read/Write Files from Disk", "type": "main", "index": 0}]]
+    },
+    "Read/Write Files from Disk": {
+      "main": [[{"node": "Execute Command", "type": "main", "index": 0}]]
+    },
+    "Execute Command": {
+      "main": [[{"node": "Code in JavaScript1", "type": "main", "index": 0}]]
+    },
+    "Code in JavaScript1": {
+      "main": [[{"node": "Read/Write Files from Disk1", "type": "main", "index": 0}]]
+    },
+    "Read/Write Files from Disk1": {
+      "main": [[{"node": "Upload a video", "type": "main", "index": 0}]]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "tags": []
+}
