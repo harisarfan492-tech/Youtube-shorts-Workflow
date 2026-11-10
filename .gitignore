@@ -1,0 +1,27 @@
+# Generated media and working files
+audio/
+clips/
+output/
+*.mp4
+*.mp3
+*.wav
+*.srt
+
+# Local configuration and secrets
+.env
+.env.*
+*.pem
+*.key
+credentials*
+*token*
+client_secret*.json
+
+# Python
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+
+# n8n local data
+.n8n/
+database.sqlite
