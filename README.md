@@ -78,3 +78,8 @@ This creates sequential clips of approximately 45 seconds, named `clip_01.mp4`, 
 ## License
 
 No license has been added yet. Until a license is chosen, normal copyright applies and reuse is not automatically permitted.
+
+## Needed Improvements
+
+Some improvements can be made to the captions in the 'make_short.bat' file since the current captions look rather terrible, just added as a placehoder, if you want to see the quality of content you can do so at 
+https://youtube.com/shorts/U-izKHQTJ_U
